@@ -46,7 +46,17 @@ class linkedlist:
                 current = current.next_node
             current.next_node = new_node
     
+    def DeleteLast (self):
+        if self.head is None:
+            print("The list is empty there is nothing to delete")
+        elif self.head.next_node is None: #if there is only 1 node
+            self.head = None 
+            return
         
+        current = self.head
+        while current.next_node and current.next_node.next_node:
+            current = current.next_node
+        current.next_node = None
 
 list1 = linkedlist()
 list1.append(4)
@@ -57,3 +67,7 @@ list1.InsertFirst(10)
 print("insert 10 as the first element of the liste: ", list1.display())
 list1.InsertLast(70)
 print("insert 70 as the last element of the liste: ", list1.display())
+list1.DeleteFirst()
+print("delete the first element of the liste: ", list1.display())
+list1.DeleteLast()
+print("delete the last element of the list : " ,list1.display())
