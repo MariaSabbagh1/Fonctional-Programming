@@ -58,6 +58,17 @@ class linkedlist:
             current = current.next_node
         current.next_node = None
 
+    def FindByIndex (self,index):
+        current = self.head
+        count = 0
+        while current:
+            if count == index:
+                return current.value
+            count += 1
+            current = current.next_node
+        return "Index Out Of Range"
+
+
 list1 = linkedlist()
 list1.append(4)
 list1.append(5)
@@ -68,6 +79,10 @@ print("insert 10 as the first element of the liste: ", list1.display())
 list1.InsertLast(70)
 print("insert 70 as the last element of the liste: ", list1.display())
 list1.DeleteFirst()
+index = 2
+print(f"The element at the index {index} is : " , list1.FindByIndex(index)) 
+index = 6
+print(list1.FindByIndex(index))
 print("delete the first element of the liste: ", list1.display())
 list1.DeleteLast()
 print("delete the last element of the list : " ,list1.display())
