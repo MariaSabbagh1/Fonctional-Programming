@@ -30,7 +30,23 @@ deleteLast (Node _ Empty) = Empty --only one elt to remove
 deleteLast (Node x (Node _ Empty)) = Node x Empty --only two elts to remove
 deleteLast (Node x xs) = Node x (deleteLast xs)
 
+findByIndex :: Int -> Linkedlist a -> Maybe a
+findByIndex _ Empty = Nothing
+findByIndex 0 (Node x _) = Just x
+findByIndex n (Node _ xs)
+    | n > 0     = findByIndex (n - 1) xs  -- Recur for the next node
+    | otherwise = Nothing
 
+
+reverse1 :: Linkedlist a -> Linkedlist a
+reverse1 = rev1 Empty
+  where 
+     rev1 acc Empty = acc
+     rev1 acc (Node x xs) = rev1 (append x acc) xs
+
+merge :: Linkedlist a -> Linkedlist a -> Linkedlist a
+merge Empty ys = ys
+merge (Node x xs) ys = Node x (merge xs ys)
 
 
 
@@ -44,10 +60,29 @@ main = do
     let linkedList5 = insertLast 4 linkedList4
     let linkedList6 = deleteFirst linkedList5
     let linkedList7 = deleteLast linkedList6
+    let index =2
+    let invalidIndex = 5
+    let linkedList8 = reverse1 linkedList7
+    let linkedList9 = merge linkedList8 linkedList7
+    
+    putStrLn $ "list : [" ++ display linkedList3 ++ "]"
+    putStrLn $ "insert first : [" ++ display linkedList4 ++ "]"
+    putStrLn $ "insert last :[" ++ display linkedList5 ++ "]"
+    putStrLn $ "delete first : [" ++ display linkedList6 ++ "]"
+    putStrLn $ "delete last : [" ++ display linkedList7 ++ "]"
+    
 
-    putStrLn $ "[" ++ display linkedList3 ++ "]"
-    putStrLn $ "[" ++ display linkedList4 ++ "]"
-    putStrLn $ "[" ++ display linkedList5 ++ "]"
-    putStrLn $ "[" ++ display linkedList6 ++ "]"
-    putStrLn $ "[" ++ display linkedList7 ++ "]"
 
+
+    case findByIndex index linkedList7 of
+        Just value -> putStrLn $ "Element at index " ++ show index ++ ": " ++ show value
+        Nothing -> putStrLn $ "Index " ++ show index ++ " is out of range"
+    
+   
+    case findByIndex invalidIndex linkedList7 of
+        Just value -> putStrLn $ "Element at index " ++ show invalidIndex ++ ": " ++ show value
+        Nothing -> putStrLn $ "Index " ++ show invalidIndex ++ " is out of range"
+
+  
+    putStrLn $ "reversed list [" ++ display linkedList8 ++ "]"
+    putStrLn $ "merged list [" ++ display linkedList9 ++ "]"
