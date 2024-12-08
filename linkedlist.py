@@ -1,3 +1,7 @@
+import time
+import random
+from memory_profiler import profile
+
 class Node :
     def __init__(self, value, next_node=None): #None because the last node doesnt point to any other node.
         self.value = value
@@ -46,6 +50,12 @@ class linkedlist:
                 current = current.next_node
             current.next_node = new_node
     
+    def DeleteFirst (self):
+        if self.head is None:
+            print("The list is empty there is nothing to delete")
+        else:
+            self.head = self.head.next_node
+    
     def DeleteLast (self):
         if self.head is None:
             print("The list is empty there is nothing to delete")
@@ -57,7 +67,7 @@ class linkedlist:
         while current.next_node and current.next_node.next_node:
             current = current.next_node
         current.next_node = None
-
+    
     def FindByIndex (self,index):
         current = self.head
         count = 0
@@ -67,6 +77,7 @@ class linkedlist:
             count += 1
             current = current.next_node
         return "Index Out Of Range"
+        
     def Reverse (self):
         previous = None
         current = self.head
@@ -88,29 +99,55 @@ class linkedlist:
                 current = current.next_node
             current.next_node = list2.head
             
-list1 = linkedlist()
-list1.append(4)
-list1.append(5)
-list1.append(6)
-print ("list : ", list1.display())
-list1.InsertFirst(10)
-print("insert 10 as the first element of the liste: ", list1.display())
-list1.InsertLast(70)
-print("insert 70 as the last element of the liste: ", list1.display())
-list1.DeleteFirst()
-print("delete the first element of the liste: ", list1.display())
-list1.DeleteLast()
-print("delete the last element of the list : " ,list1.display())
-index = 2
-print(f"The element at the index {index} is : " , list1.FindByIndex(index)) 
-index = 6
-print(list1.FindByIndex(index))
-print ("The list :",list1.display())
-list1.Reverse()
-print("This is the reversed list : ", list1.display())
-list2 = linkedlist()
-list2.append(1)
-list2.append(2)
-print("list2 : ", list2.display())
-list1.Merge(list2)
-print ("Merged List: ", list1.display())
+    @profile       
+    def time_function(self, func_name, *args):
+        start = time.perf_counter_ns()  # High-resolution timer
+        result = getattr(self, func_name)(*args)
+        end = time.perf_counter_ns()
+        elapsed_ms = (end - start) / (10**6)  # Convert ns to ms
+        print(f"{func_name} took {elapsed_ms:.6f} ms")
+        return result            
+            
+    
+        
+        
+
+if __name__ == "__main__":
+    # Initialize list1 with 1000 random elements
+    list1 = linkedlist()
+    for _ in range(1000):
+        list1.append(random.randint(1, 10000))  # Random integers between 1 and 1000
+    print("list1:", list1.display())
+
+    # Insert operations
+    list1.time_function("InsertFirst", random.randint(1, 10000))
+    #print("After InsertFirst:", list1.display())
+
+    list1.time_function("InsertLast", random.randint(1, 10000))
+    #print("After InsertLast:", list1.display())
+
+    # Delete operations
+    list1.time_function("DeleteFirst")
+    #print("After DeleteFirst:", list1.display())
+
+    list1.time_function("DeleteLast")
+    #print("After DeleteLast:", list1.display())
+
+    # Find element by index
+    index = 50  
+    value = list1.time_function("FindByIndex", index)
+    #print(f"The element at index {index} is:", value)
+
+    # Reverse the list
+    list1.time_function("Reverse")
+    #print("Reversed list:", list1.display())
+
+    # Initialize list2 with 1000 random elements
+    list2 = linkedlist()
+    for _ in range(100):
+        list2.append(random.randint(1, 10000))  
+    #print("list2:", list2.display())
+
+    # Merge list2 into list1
+    list1.time_function("Merge", list2)
+    #print("Merged List:", list1.display())
