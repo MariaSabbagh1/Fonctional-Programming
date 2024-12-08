@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # Initialize list1 with 1000 random elements
     list1 = linkedlist()
     for _ in range(1000):
-        list1.append(random.randint(1, 10000))  # Random integers between 1 and 1000
+        list1.append(random.randint(1, 10000)) 
     print("list1:", list1.display())
 
     # Insert operations
