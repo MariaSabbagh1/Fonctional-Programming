@@ -67,8 +67,27 @@ class linkedlist:
             count += 1
             current = current.next_node
         return "Index Out Of Range"
-
-
+    def Reverse (self):
+        previous = None
+        current = self.head
+        while current:
+            next_node = current.next_node
+            current.next_node = previous
+            previous = current
+            current = next_node
+        self.head = previous
+        
+    def Merge (self, list2):
+        if self.head is None:
+            self.head = list2.head
+        elif list2.head is None:
+            return
+        else:
+            current = self.head
+            while current.next_node:
+                current = current.next_node
+            current.next_node = list2.head
+            
 list1 = linkedlist()
 list1.append(4)
 list1.append(5)
@@ -79,10 +98,19 @@ print("insert 10 as the first element of the liste: ", list1.display())
 list1.InsertLast(70)
 print("insert 70 as the last element of the liste: ", list1.display())
 list1.DeleteFirst()
+print("delete the first element of the liste: ", list1.display())
+list1.DeleteLast()
+print("delete the last element of the list : " ,list1.display())
 index = 2
 print(f"The element at the index {index} is : " , list1.FindByIndex(index)) 
 index = 6
 print(list1.FindByIndex(index))
-print("delete the first element of the liste: ", list1.display())
-list1.DeleteLast()
-print("delete the last element of the list : " ,list1.display())
+print ("The list :",list1.display())
+list1.Reverse()
+print("This is the reversed list : ", list1.display())
+list2 = linkedlist()
+list2.append(1)
+list2.append(2)
+print("list2 : ", list2.display())
+list1.Merge(list2)
+print ("Merged List: ", list1.display())
