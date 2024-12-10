@@ -111,10 +111,29 @@ class LinkedList:
 
 if __name__ == "__main__":
     list1 = LinkedList()
-    for _ in range(1000):
+
+    # Profiling the append operation
+    print("Performance for operations:")
+    gc.collect()  # Clean up garbage collection before measuring memory
+    mem_before = list1._get_size()  # Memory before operation
+    start_time = time.perf_counter_ns()
+
+    # Perform append for 10,000 elements
+    for _ in range(10000):
         list1.append(random.randint(1, 10000))
 
-    print("Performance for operations:")
+    end_time = time.perf_counter_ns()
+    gc.collect()
+    mem_after = list1._get_size()  # Memory after operation
+
+    elapsed_ms = (end_time - start_time) / (10**6)  # Convert ns to ms
+    memory_used = abs(mem_after - mem_before)  # Use absolute value for memory change
+
+    print(f"Operation: append (10,000 elements)")
+    print(f"Execution time: {elapsed_ms:.3f} ms")
+    print(f"Memory change: {memory_used} bytes\n")
+
+    # Profiling other operations
     list1.time_and_memory_function("InsertFirst", random.randint(1, 10000))
     list1.time_and_memory_function("InsertLast", random.randint(1, 10000))
     list1.time_and_memory_function("DeleteFirst")
@@ -122,7 +141,7 @@ if __name__ == "__main__":
     list1.time_and_memory_function("FindByIndex", 50)
 
     list2 = LinkedList()
-    for _ in range(100):
+    for _ in range(10000):
         list2.append(random.randint(1, 10000))
     list1.time_and_memory_function("Merge", list2)
     list1.time_and_memory_function("Reverse")
