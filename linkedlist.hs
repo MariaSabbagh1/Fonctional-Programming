@@ -1,9 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 import GHC.Generics (Generic)
-import Control.DeepSeq (NFData, rnf)
+import Control.DeepSeq (NFData, rnf, deepseq)
 import Criterion.Main
 import System.Random (randomRIO)
+import GHC.Stats (getRTSStats, RTSStats(allocated_bytes), getRTSStatsEnabled)
+import System.Mem (performGC)
+import System.Clock (Clock(Monotonic), getTime, diffTimeSpec, toNanoSecs)
 
 -- Define the LinkedList data structure
 data Node a = Empty | Node a (Node a) deriving (Show, Generic)
@@ -62,33 +65,62 @@ fromList (x:xs) = Node x (fromList xs)
 generateRandomList :: Int -> Int -> Int -> IO [Int]
 generateRandomList n low high = sequence (replicate n (randomRIO (low, high)))
 
--- Main function with benchmarks
-main :: IO ()
-main = do
+-- Measure both execution time and memory usage for a function
+measureTimeAndMemory :: NFData a => IO a -> IO ()
+measureTimeAndMemory action = do
+    statsEnabled <- getRTSStatsEnabled
+    if not statsEnabled
+        then putStrLn "RTS Stats are not enabled. Run GHCi with +RTS -T."
+        else do
+            performGC -- Force garbage collection for accurate measurement
+            
+            -- Start time and memory
+            startStats <- getRTSStats
+            let startMem = allocated_bytes startStats
+            startTime <- getTime Monotonic
+            
+            -- Perform the action
+            result <- action
+            result `deepseq` return () -- Force evaluation
+            
+            -- End time and memory
+            endStats <- getRTSStats
+            let endMem = allocated_bytes endStats
+            endTime <- getTime Monotonic
+            
+            -- Calculate time and memory usage
+            let elapsedTime = fromIntegral (toNanoSecs (diffTimeSpec startTime endTime)) / (10^6) -- Convert to milliseconds
+            let memoryUsed = endMem - startMem
+            
+            -- Print results
+            putStrLn $ "Execution time: " ++ show elapsedTime ++ " ms"
+            putStrLn $ "Memory used: " ++ show memoryUsed ++ " bytes"
+
+-- Main function with memory profiling
+runMemoryProfiling :: IO ()
+runMemoryProfiling = do
     randomList <- generateRandomList 1000 1 1000
     let linkedList = fromList randomList
     let linkedList2 = fromList randomList
 
-    defaultMain
-        [ bgroup "append"
-            [ bench "append 1000 elements" $ nf (foldl (\acc x -> append x acc) linkedList) randomList
-            ]
-        , bgroup "insertFirst"
-            [ bench "insertFirst 1000 elements" $ nf (foldl (\acc x -> insertFirst x acc) linkedList) randomList
-            ]
-        , bgroup "insertLast"
-            [ bench "insertLast 1000 elements" $ nf (foldl (\acc x -> insertLast x acc) linkedList) randomList
-            ]
-        , bgroup "deleteFirst"
-            [ bench "deleteFirst 1000 elements" $ nf (foldl (\acc _ -> deleteFirst acc) linkedList) [1..1000]
-            ]
-        , bgroup "deleteLast"
-            [ bench "deleteLast 1000 elements" $ nf (foldl (\acc _ -> deleteLast acc) linkedList) [1..1000]
-            ]
-        , bgroup "reverse1"
-            [ bench "reverse1" $ nf reverse1 linkedList
-            ]
-        , bgroup "merge"
-            [ bench "merge two linked lists" $ nf (merge linkedList) linkedList2
-            ]
-        ]
+    putStrLn "Performance for operations:"
+    measureTimeAndMemory $ return $ foldl (\acc x -> append x acc) Empty randomList
+    putStrLn "Append profiling completed."
+
+    measureTimeAndMemory $ return $ foldl (\acc x -> insertFirst x acc) Empty randomList
+    putStrLn "InsertFirst profiling completed."
+
+    measureTimeAndMemory $ return $ foldl (\acc x -> insertLast x acc) Empty randomList
+    putStrLn "InsertLast profiling completed."
+
+    measureTimeAndMemory $ return $ foldl (\acc _ -> deleteFirst acc) linkedList [1..1000]
+    putStrLn "DeleteFirst profiling completed."
+
+    measureTimeAndMemory $ return $ foldl (\acc _ -> deleteLast acc) linkedList [1..1000]
+    putStrLn "DeleteLast profiling completed."
+
+    measureTimeAndMemory $ return $ reverse1 linkedList
+    putStrLn "Reverse profiling completed."
+
+    measureTimeAndMemory $ return $ merge linkedList linkedList2
+    putStrLn "Merge profiling completed."
