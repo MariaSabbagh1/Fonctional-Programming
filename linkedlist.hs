@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
+
 
 import GHC.Generics (Generic)
 import Control.DeepSeq (NFData, rnf, deepseq)
@@ -8,7 +8,7 @@ import GHC.Stats (getRTSStats, RTSStats(allocated_bytes), getRTSStatsEnabled)
 import System.Mem (performGC)
 import System.Clock (Clock(Monotonic), getTime, diffTimeSpec, toNanoSecs)
 
--- Define the LinkedList data structure
+
 data Node a = Empty | Node a (Node a) deriving (Show, Generic)
 type Linkedlist a = Node a
 
@@ -56,6 +56,12 @@ merge :: Linkedlist a -> Linkedlist a -> Linkedlist a
 merge Empty ys = ys
 merge (Node x xs) ys = Node x (merge xs ys)
 
+-- Find element by index
+findByIndex :: Int -> Linkedlist a -> Maybe a
+findByIndex _ Empty = Nothing
+findByIndex 0 (Node x _) = Just x
+findByIndex n (Node _ xs) = findByIndex (n - 1) xs
+
 -- Create a LinkedList from a list
 fromList :: [a] -> Linkedlist a
 fromList [] = Empty
@@ -81,7 +87,7 @@ measureTimeAndMemory action = do
             
             -- Perform the action
             result <- action
-            result `deepseq` return () -- Force evaluation
+            result `deepseq` return ()
             
             -- End time and memory
             endStats <- getRTSStats
@@ -99,7 +105,7 @@ measureTimeAndMemory action = do
 -- Main function with memory profiling
 runMemoryProfiling :: IO ()
 runMemoryProfiling = do
-    randomList <- generateRandomList 1000 1 1000
+    randomList <- generateRandomList 10000 1 10000
     let linkedList = fromList randomList
     let linkedList2 = fromList randomList
 
@@ -113,10 +119,10 @@ runMemoryProfiling = do
     measureTimeAndMemory $ return $ foldl (\acc x -> insertLast x acc) Empty randomList
     putStrLn "InsertLast profiling completed."
 
-    measureTimeAndMemory $ return $ foldl (\acc _ -> deleteFirst acc) linkedList [1..1000]
+    measureTimeAndMemory $ return $ foldl (\acc _ -> deleteFirst acc) linkedList [1..10000]
     putStrLn "DeleteFirst profiling completed."
 
-    measureTimeAndMemory $ return $ foldl (\acc _ -> deleteLast acc) linkedList [1..1000]
+    measureTimeAndMemory $ return $ foldl (\acc _ -> deleteLast acc) linkedList [1..10000]
     putStrLn "DeleteLast profiling completed."
 
     measureTimeAndMemory $ return $ reverse1 linkedList
@@ -124,3 +130,6 @@ runMemoryProfiling = do
 
     measureTimeAndMemory $ return $ merge linkedList linkedList2
     putStrLn "Merge profiling completed."
+
+    measureTimeAndMemory $ return $ findByIndex 5000 linkedList
+    putStrLn "FindByIndex profiling completed."
