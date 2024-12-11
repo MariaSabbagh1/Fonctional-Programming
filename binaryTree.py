@@ -1,19 +1,29 @@
-#Node
+import random
+import time  # for time complexity
+import sys  # for space complexity
+import tracemalloc  # for auxiliary memory
+
+# Calculate the memory of a node
+def node_memory(node):
+    if not node:
+        return 0
+    return sys.getsizeof(node) + node_memory(node.left) + node_memory(node.right)
+
+# Node class
 class Node:
     def __init__(self, key):
         self.key = key
         self.left = None
         self.right = None
 
-
-#Binary Tree
+# Binary Tree class
 class BinaryTree:
-    
-    #Construct
+
+    # Constructor
     def __init__(self):
         self.root = None
 
-    #Insert method
+    # Insert method
     def insert(self, key):
         if not self.root:
             self.root = Node(key)
@@ -32,10 +42,10 @@ class BinaryTree:
             else:
                 current.right = Node(key)
 
-    #Search
+    # Search method
     def search(self, key):
         return self._search(self.root, key)
-  
+
     def _search(self, current, key):
         if not current:
             return False
@@ -45,8 +55,8 @@ class BinaryTree:
             return self._search(current.left, key)
         else:
             return self._search(current.right, key)
-        
-    #Remove
+
+    # Remove method
     def remove(self, key):
         self.root = self._remove(self.root, key)
 
@@ -71,8 +81,8 @@ class BinaryTree:
         while current.left:
             current = current.left
         return current
-    
-    #In-order traversal
+
+    # In-order traversal
     def inorder_traversal(self):
         result = []
         self._inorder(self.root, result)
@@ -84,7 +94,7 @@ class BinaryTree:
             result.append(current.key)
             self._inorder(current.right, result)
 
-    #Pre-order traversal
+    # Pre-order traversal
     def preorder_traversal(self):
         result = []
         self._preorder(self.root, result)
@@ -96,7 +106,7 @@ class BinaryTree:
             self._preorder(current.left, result)
             self._preorder(current.right, result)
 
-    #Post-order traversal
+    # Post-order traversal
     def postorder_traversal(self):
         result = []
         self._postorder(self.root, result)
@@ -108,23 +118,63 @@ class BinaryTree:
             self._postorder(current.right, result)
             result.append(current.key)
 
-# Example usage
+# Main execution
 if __name__ == "__main__":
     bt = BinaryTree()
-    bt.insert(50)
-    bt.insert(30)
-    bt.insert(70)
-    bt.insert(20)
-    bt.insert(40)
-    bt.insert(60)
-    bt.insert(80)
+    n = 10000  # Number of elements
+    print(f"\nNumber of elements: {n}")
 
-    print("In-order traversal:", bt.inorder_traversal())
-    print("Pre-order traversal:", bt.preorder_traversal())
-    print("Post-order traversal:", bt.postorder_traversal())
+    # Time for inserts
+    start = time.time()
+    for i in range(n - 1):
+        bt.insert(random.randint(1, 999999))
+    # Insert the n-th element to be removed later
+    bt.insert(872)
+    end = time.time()
+    print(f"\nTime taken to insert {n} elements: {(end - start):.5f} seconds")
 
-    print("Search 40:", bt.search(40))
-    print("Search 100:", bt.search(100))
+    # Measure tree memory
+    tree_memory = node_memory(bt.root)
+    print(f"Memory used by the tree: {tree_memory} bytes")
 
-    bt.remove(50)
-    print("In-order traversal after removing 50:", bt.inorder_traversal())
+    # Time and auxiliary memory for in-order traversal
+    start = time.time()
+    tracemalloc.start()
+    bt.inorder_traversal()
+    end = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"\nAuxiliary memory for in-order traversal: {current} bytes")
+    tracemalloc.stop()
+    print(f"Time taken for in-order traversal of {n} elements: {(end - start):.5f} seconds")
+
+    # Time and auxiliary memory for pre-order traversal
+    start = time.time()
+    tracemalloc.start()
+    bt.preorder_traversal()
+    end = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"\nAuxiliary memory for in-order traversal: {current} bytes")
+    tracemalloc.stop()
+    print(f"Time taken for pre-order traversal of {n} elements: {(end - start):.5f} seconds")
+
+    # Time and auxiliary memory for post-order traversal
+    start = time.time()
+    tracemalloc.start()
+    bt.postorder_traversal()
+    end = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"\nAuxiliary memory for in-order traversal: {current} bytes")
+    tracemalloc.stop()
+    print(f"Time taken for post-order traversal of {n} elements: {(end - start):.5f} seconds")
+
+    # Time to search an element (worst case scenario)
+    start = time.time()
+    print(f"\nSearch 88901: {bt.search(88901)}")
+    end = time.time()
+    print(f"Time taken to search for 88901: {(end - start):.5f} seconds")
+
+    # Time to remove an element (worst case scenario)
+    start = time.time()
+    bt.remove(872)
+    end = time.time()
+    print(f"\nTime taken to remove 872: {(end - start):.5f} seconds")
